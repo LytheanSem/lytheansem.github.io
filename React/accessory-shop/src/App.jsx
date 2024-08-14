@@ -3,10 +3,11 @@ import accessoryData from "./accessory.json";
 import DataTable from "./components/DataTable";
 import Button from "react-bootstrap/Button";
 import { Container, Row, Col } from "react-bootstrap";
+import { useLocalStorage } from "react-use";
 
 function App() {
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [filteredSelectedItems, setFilteredSelectedItems] = useState([]);
+  const [selectedItems, setSelectedItems] = useLocalStorage([]);
+  const [filteredSelectedItems, setFilteredSelectedItems] = useState([...selectedItems]);
 
   const quantityRef = useRef();
   const productRef = useRef();
