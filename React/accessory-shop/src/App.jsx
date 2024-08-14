@@ -6,7 +6,7 @@ import { Container, Row, Col } from "react-bootstrap";
 import { useLocalStorage } from "react-use";
 
 function App() {
-  const [selectedItems, setSelectedItems] = useLocalStorage([]);
+  const [selectedItems, setSelectedItems] = useLocalStorage("selected-items", []);
   const [filteredSelectedItems, setFilteredSelectedItems] = useState([...selectedItems]);
 
   const quantityRef = useRef();
