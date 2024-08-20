@@ -4,10 +4,17 @@ import DataTable from "./components/DataTable";
 import Button from "react-bootstrap/Button";
 import { Container, Row, Col } from "react-bootstrap";
 import { useLocalStorage } from "react-use";
+import { TotalPriceContext } from "./context";
 
 function App() {
-  const [selectedItems, setSelectedItems] = useLocalStorage("selected-items", []);
-  const [filteredSelectedItems, setFilteredSelectedItems] = useState([...selectedItems]);
+  const [selectedItems, setSelectedItems] = useLocalStorage(
+    "selected-items",
+    []
+  );
+  const [filteredSelectedItems, setFilteredSelectedItems] = useState([
+    ...selectedItems,
+  ]);
+  const [totalPrice, setTotalPrice] = useState();
 
   const quantityRef = useRef();
   const productRef = useRef();
@@ -22,6 +29,7 @@ function App() {
       ...product,
       quantity: quantityRef.current.value,
     };
+    console.table(order);
     selectedItems.push(order);
     setSelectedItems([...selectedItems]);
     setFilteredSelectedItems([...selectedItems]);
@@ -31,23 +39,13 @@ function App() {
     selectedItems.splice(index, 1);
     setSelectedItems([...selectedItems]);
     setFilteredSelectedItems([...selectedItems]);
-  }
-
-  const filter = (keyword) => {
-    const filteredItems = selectedItems.filter((item) => item.name.includes(keyword))
-    setFilteredSelectedItems(filteredItems)
-  }
-
-  const sortAscending = () => {
-    const sortedItems = [...selectedItems].sort((a, b) => a.name.localeCompare(b.name));
-    setSelectedItems(sortedItems);
-    setFilteredSelectedItems(sortedItems);
   };
 
-  const sortDescending = () => {
-    const sortedItems = [...selectedItems].sort((a, b) => b.name.localeCompare(a.name));
-    setSelectedItems(sortedItems);
-    setFilteredSelectedItems(sortedItems);
+  const filter = (keyword) => {
+    const filteredItems = selectedItems.filter((item) =>
+      item.name.includes(keyword)
+    );
+    setFilteredSelectedItems(filteredItems);
   };
 
   const updatePrice = (e) => {
@@ -58,43 +56,62 @@ function App() {
     setPrice(product.price);
   };
 
+  const sort = (sortingWay) => {
+    console.log("Helo");
+    console.log(filteredSelectedItems.sort());
+    if (sortingWay === "ascendingly") {
+      setFilteredSelectedItems([
+        ...filteredSelectedItems.sort(function (a, b) {
+          return a.name.localeCompare(b.name);
+        }),
+      ]);
+    } else if (sortingWay === "descendingly") {
+      setFilteredSelectedItems([
+        ...filteredSelectedItems.sort(function (a, b) {
+          return b.name.localeCompare(a.name);
+        }),
+      ]);
+    }
+  };
+
   return (
     <>
-      <Container>
-        <Row>
-          <Col xs={2}> Product: </Col>
-          <Col xs={10}>
-            <select ref={productRef} onChange={updatePrice}>
-              {accessoryData.map((accessory, index) => (
-                <option key={index} value={accessory.id}>
-                  {accessory.name}
-                </option>
-              ))}
-            </select>
-          </Col>
-        </Row>
-        <Row>
-          <Col xs={2}> Price: </Col>
-          <Col xs={10}> {price} </Col>
-        </Row>
-        <Row>
-          <Col xs={2}> Quantity: </Col>
-          <Col xs={10}>
-            <input type="number" ref={quantityRef} defaultValue={1} />{" "}
-          </Col>
-        </Row>
-        <Button onClick={handleSubmit}>Submit</Button>
-      </Container>
+      <TotalPriceContext.Provider value={{ totalPrice, setTotalPrice }}>
+        <Container>
+          <Row>
+            <Col xs={2}> Product: </Col>
+            <Col xs={10}>
+              <select ref={productRef} onChange={updatePrice}>
+                {accessoryData.map((accessory, index) => (
+                  <option key={index} value={accessory.id}>
+                    {accessory.name}
+                  </option>
+                ))}
+              </select>
+            </Col>
+          </Row>
+          <Row>
+            <Col xs={2}> Price: </Col>
+            <Col xs={10}> {price} </Col>
+          </Row>
+          <Row>
+            <Col xs={2}> Quantity: </Col>
+            <Col xs={10}>
+              <input type="number" ref={quantityRef} defaultValue={1} />{" "}
+            </Col>
+          </Row>
+          <Button onClick={handleSubmit}>Submit</Button>
+        </Container>
 
-      <Container>
-        <DataTable
-          data={filteredSelectedItems}
-          onDelete={deleteItemByIndex}
-          onFilter={filter}
-          onSortAscending={sortAscending}
-          onSortDescending={sortDescending}
-        />
-      </Container>
+        <Container>
+          <DataTable
+            data={filteredSelectedItems}
+            onDelete={deleteItemByIndex}
+            onFilter={filter}
+            onSort={sort}
+          />
+        </Container>
+      </TotalPriceContext.Provider>
     </>
   );
 }
